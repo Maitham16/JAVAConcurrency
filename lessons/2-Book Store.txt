@@ -1,0 +1,94 @@
+Let's consider a simple scenario: 
+you are building an application for a book store and you need to calculate the total 
+cost of all the books in the store.
+
+We'll simulate this scenario with a list of random integers representing the cost of 
+each book, and calculate the sum using multiple threads to demonstrate the power of 
+concurrency.
+
+Here's a rough outline of how you could structure the project:
+
+    BookStore - Main class of our application.
+    Book - Class representing a book in the store.
+    CostCalculator - Runnable class that calculates the cost of a subset of books.
+
+Let's see how each class might look:
+
+Book.java:
+        public class Book {
+            private int cost;
+
+            public Book(int cost) {
+                this.cost = cost;
+            }
+
+            public int getCost() {
+                return cost;
+            }
+        }
+
+CostCalculator.java:
+        import java.util.List;
+
+        public class CostCalculator implements Runnable {
+
+            private final List<Book> books;
+            private long totalCost = 0;
+
+            public CostCalculator(List<Book> books) {
+                this.books = books;
+            }
+
+            public long getTotalCost() {
+                return totalCost;
+            }
+
+            @Override
+            public void run() {
+                for (Book book : books) {
+                    totalCost += book.getCost();
+                }
+            }
+        }
+
+BookStore.java:
+        import java.util.ArrayList;
+        import java.util.List;
+        import java.util.Random;
+        import java.util.concurrent.ExecutorService;
+        import java.util.concurrent.Executors;
+        import java.util.concurrent.TimeUnit;
+
+        public class BookStore {
+            
+            private static final int NUM_BOOKS = 1000;
+
+            public static void main(String[] args) throws InterruptedException {
+                List<Book> books = new ArrayList<>();
+                Random rand = new Random();
+
+                for (int i = 0; i < NUM_BOOKS; i++) {
+                    books.add(new Book(rand.nextInt(100)));
+                }
+
+                ExecutorService executor = Executors.newFixedThreadPool(10);
+
+                List<CostCalculator> tasks = new ArrayList<>();
+
+                for (int i = 0; i < 10; i++) {
+                    CostCalculator calculator = new CostCalculator(books.subList(i * 100, (i + 1) * 100));
+                    tasks.add(calculator);
+                    executor.submit(calculator);
+                }
+
+                executor.shutdown();
+                executor.awaitTermination(1, TimeUnit.MINUTES);
+
+                long totalCost = tasks.stream().mapToLong(CostCalculator::getTotalCost).sum();
+                System.out.println("Total cost of all books: " + totalCost);
+            }
+        }
+
+In this example, we're splitting the list of books into ten chunks and calculating the cost of each 
+chunk in a separate thread. This way, the total cost of all books is calculated in parallel, which 
+can lead to significant time savings if you have a large number of books.

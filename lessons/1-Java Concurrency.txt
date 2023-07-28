@@ -1,0 +1,61 @@
+Java Concurrency refers to executing multiple tasks at the same time during program execution. 
+It's a way to utilize available CPU resources efficiently, so that multiple tasks can progress 
+without necessarily having to wait for others to complete.
+
+The primary building blocks of Java Concurrency are Threads, Runnable, and Callable. 
+
+Threads: A thread is a lightweight process or the smallest unit of execution within a process. 
+In Java, it's represented by the java.lang.Thread class. A program can have multiple threads 
+running concurrently.
+
+Example of creating a new Thread:
+    Thread thread = new Thread();
+    thread.start();
+
+Runnable: Runnable is an interface that represents a task to be run concurrently.
+The Runnable interface should be implemented by any class whose instances are 
+intended to be executed by a thread. It defines a single method run() which is meant to contain the code executed 
+in the thread.
+
+Example of creating a new Thread with a Runnable:
+    Runnable runnableTask = () -> System.out.println("Runnable Task executing.");
+    Thread thread = new Thread(runnableTask);
+    thread.start();
+
+Callable and Future: Callable is similar to Runnable, in that it encapsulates a task to be executed concurrently. 
+However, Callable can return a result and can throw a checked exception. Future is used to hold the result of a 
+Callable and provides methods to check if the computation is complete, to wait for its completion, and to retrieve 
+the result.
+
+Example of using Callable and Future:
+    Callable<String> callableTask = () -> {
+        TimeUnit.MILLISECONDS.sleep(300);
+        return "Callable Task's Result";
+    };
+
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+    Future<String> future = executorService.submit(callableTask);
+
+    try {
+        String result = future.get();  // This will block until the result is available
+        System.out.println(result);
+    } catch (InterruptedException | ExecutionException e) {
+        e.printStackTrace();
+    }
+    executorService.shutdown();
+
+Executors and Thread Pools: The Executors class provides utility methods for creating different kinds 
+of thread pool, such as fixed thread pool, scheduled thread pool, and cached thread pool.
+
+Synchronization: Java provides several constructs to deal with synchronization issues (race conditions) 
+in multithreaded code, like synchronized keyword, volatile keyword, ReentrantLock, Semaphore, CountDownLatch, etc.
+
+Concurrent Collections: Java provides thread-safe collection classes (like ConcurrentHashMap, 
+CopyOnWriteArrayList) that can be used in a multithreaded context without explicit synchronization.
+
+Atomic Variables: Java provides a set of atomic variables (like AtomicInteger, AtomicLong, AtomicReference) 
+which internally use synchronization and volatile semantics.
+
+CompletableFuture: CompletableFuture is used for asynchronous programming in Java. It can be used to write 
+non-blocking code by running a task on a separate thread and continuing with the rest of the code without 
+blocking/waiting for the task to complete.
